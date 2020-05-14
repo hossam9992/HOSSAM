@@ -1,61 +1,60 @@
 /*
- * hossamtest.c
+ * timer0.c
  *
- * Created: 4/14/2020 4:44:53 PM
+ * Created: 5/14/2020 5:21:59 PM
  * Author : MAZDA
  */ 
 
+#define F_CPU  16000000
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include "bitmath.h"
-#define F_CPU 16000000
 #include <util/delay.h>
-#include "STD_Types.h"
+#define TOGGLE(var,bit)      var^=(1<<bit)
+volatile unsigned int counter=0;
 int main(void)
 {
-	CLR_BIT(DDRB,0); //PB0 as input pin
-	SET_BIT(DDRB,3);//pd3 as an output
-	SET_BIT(DDRB,0);
-	CLR_BIT(DDRD,3);
-	CLR_BIT(DDRC,2);
-	CLR_BIT(DDRC,7);
-	SET_BIT(DDRA,2);
-	CLR_BIT(DDRD,2);
-	while (1)
-	{
-		if(GET_BIT(PINB,0)==1){
-			_delay_ms(30);
-			SET_BIT(PORTA,3);
-			_delay_ms(2000);
-			CLR_BIT(PORTA,3);
-			_delay_ms(3000);
-			SET_BIT(PORTA,3);
-			_delay_ms(1000);
-		}
-		else{
-			CLR_BIT(PORTA,3);
-			_delay_ms(100);
-		}
-		  if (GET_BIT(PINB,4)==1)
-		  {
-			  SET_BIT(PORTC,2);
-			  SET_BIT(PORTC,7);
-			  SET_BIT(PORTD,3);
-			  _delay_ms(2000);
-		  }
-		  else{
-			  CLR_BIT(PORTC,2);
-			  CLR_BIT(PORTC,7);
-			  CLR_BIT(PORTD,3);
-			  _delay_ms(1000);
-		  }
-		  if (GET_BIT(PIND,2)==1)
-		  
-		  {
-			  SET_BIT(PORTA,2);
-			  _delay_ms(3000);
-		  }
-		  else{
-			  CLR_BIT(PORTA,2);
-		  }
-	}
+	
+	
+	TCCR0=(1<<CS00)|(1<<CS01); 
+	
+	TIMSK=(1<<TOIE0);
+	
+	DDRC=(1<<2);     
+	DDRC|=(1<<7);   
+	DDRD=(1<<3);    
+	
+	sei();
+	while(1)
+		{
+		if(counter>=50)
+		{
+			    PORTC^=(1<<2);
+				_delay_ms(10);
+		    
+	    	}
+			 if(counter>=100)
+			{
+				PORTC^=(1<<7);
+				_delay_ms(10);
+			
+			}
+			 if(counter>=150)
+			{
+				PORTD^=(1<<3);
+				_delay_ms(10);
+				counter=0;
+			}
+
+     }
 }
+
+ISR(TIMER0_OVF_vect)
+{
+	counter++;
+}
+
+
+
+
+
